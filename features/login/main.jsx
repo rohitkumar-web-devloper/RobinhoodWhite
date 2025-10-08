@@ -93,7 +93,7 @@ export default function LoginMainPage() {
                 >
                     <Box
                         component="img"
-                        src="https://winkx.xyz/rjklnkl/rhdfstbg/assets/1e23d6b90f0d905b425ea289de345ab1.jpg"
+                        src="/one.jpg"
                         alt="Animated SVG Background"
                         sx={{
                             width: "100%",
