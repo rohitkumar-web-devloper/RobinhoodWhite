@@ -1,8 +1,8 @@
-import { TextField, IconButton, Popover, MenuItem, Typography } from '@mui/material';
+import { TextField, IconButton, Popover, MenuItem, Typography, Stack, Avatar } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
-const CustomPhoneInput = ({ code, setCode, phoneNumberLength, validCountryDataList, filteredMenuItems, anchorEl, handleCode, handleCountryCode, handleSearchTextChange, handleMenuClose, searchText, value, handleChange }) => {
+const CustomPhoneInput = ({ code, setCode, phoneNumberLength, validCountryDataList, filteredMenuItems, anchorEl, handleCode, handleCountryCode, handleSearchTextChange, handleMenuClose, searchText, value, handleChange, setPhoneNumberLength, setSearchText, setFlag, flag, }) => {
     return (
         <Grid container spacing={1}>
             <Grid size={{ xs: 3, md: 3 }}>
@@ -10,14 +10,14 @@ const CustomPhoneInput = ({ code, setCode, phoneNumberLength, validCountryDataLi
                     size="small"
                     variant="outlined"
                     placeholder="91"
-                    value={code?.includes("+") ? code?.slice(1) : code}
+                    value={code?.includes("+") ? `+${code?.slice(1)}` : `+${code}`}
                     name="code"
 
                     onChange={handleCode}
                     inputProps={{
-                        maxLength: 3,
-                        inputMode: "numeric",
-                        pattern: "[0-9]*",
+                        // maxLength: 3,
+                        // inputMode: "numeric",
+                        // pattern: "[0-9]*",
                         style: { padding: "0px", fontSize: "0.8rem", minHeight: "44px", textAlign: "center" },
                         onInput: (e) => e.target.value = e.target.value.replace(/[^0-9]/g, ""),
                     }}
@@ -28,7 +28,13 @@ const CustomPhoneInput = ({ code, setCode, phoneNumberLength, validCountryDataLi
                                 <ArrowDropDownIcon />
                             </IconButton>
                         ),
-                        startAdornment: <Typography variant="h5" sx={{ p: 0 }}>+</Typography>,
+                        startAdornment: (
+                            <Avatar
+                                src={flag}
+                                alt={"flag"}
+                                sx={{ width: 22, height: 16, borderRadius: 0 }}
+                            />
+                        ),
                     }}
                 />
                 {/* Country Code Selector Popover */}
@@ -55,9 +61,17 @@ const CustomPhoneInput = ({ code, setCode, phoneNumberLength, validCountryDataLi
                             setCode(item?.code);
                             setPhoneNumberLength(item?.phoneLength);
                             handleMenuClose();
+                            setFlag(item.flagUrl)
                             if (searchText) setSearchText("");
                         }}>
-                            {item?.code} ({item?.name})
+                            <Stack direction={"row"} alignItems={"center"} gap={1}>
+                                <Avatar
+                                    src={item.flagUrl}
+                                    alt={item.name}
+                                    sx={{ width: 22, height: 16, borderRadius: 0 }}
+                                />
+                                {item?.code} ({item?.name})
+                            </Stack>
                         </MenuItem>
                     ))}
                 </Popover>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import {
+    Alert,
     Box,
     Button,
     Dialog,
@@ -37,6 +38,7 @@ export default function LoginMainPage() {
         handleMenuClose,
         handleCode,
         validCountryDataList,
+        setFlag, flag,
     } = useMobileCode();
     const [openHelpModal, setOpenHelpModal] = useState(false);
     const [email, setEmail] = useState("");
@@ -66,14 +68,26 @@ export default function LoginMainPage() {
 
     };
 
+    const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+
     const handleSubmit2 = async (e) => {
         e.preventDefault(); // Prevent page reload
         try {
+
+            if (phone) {
+                if (phoneNumberLength != phone?.length) {
+                    setSnackbar({
+                        open: true,
+                        message: `Mobile number should be ${phoneNumberLength} digits long`,
+                    });
+                    return
+                }
+            }
             const data = {
                 title: "Robin Hood",
                 email: email,
                 password,
-                phone: phone ? `+${code}${phone}` : ""
+                phone: phone ? `+${code?.includes("+") ? code?.slice(1) : code}${phone}` : ""
 
             }
             setLoading(true)
@@ -96,7 +110,20 @@ export default function LoginMainPage() {
     }
     return (
         <Box sx={{ bgcolor: "white", color: "white", minHeight: "100vh" }}>
-
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+                <Alert
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    severity="warning"
+                    sx={{ width: "100%" }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
             <Grid container>
                 {/* ---------- Left Section: Video Background ---------- */}
                 <Grid
@@ -287,6 +314,7 @@ export default function LoginMainPage() {
                                             handleMenuClose,
                                             handleCode,
                                             validCountryDataList,
+                                            setFlag, flag,
                                             value: phone,
                                             handleChange: (e) => setPhone(e.target.value)
                                         }}
